@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantumERP Pro v4.0 | Sistema ERP, POS FEL & Kardex Forense</title>
+    <title>QuantumERP Pro v5.0 | ERP, POS Láser FEL, BI Analytics & Kardex SQL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #e2e8f0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        /* Estilo de impresión exclusivo para Ticket Térmico 80mm */
         @media print {
             body * { visibility: hidden; }
             #modalTicket, #modalTicket * { visibility: visible; }
@@ -31,25 +31,28 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold text-lg tracking-tight text-white">QuantumERP <span class="text-cyan-400">Pro v4.0</span></h1>
+                        <h1 class="font-extrabold text-lg tracking-tight text-white">QuantumERP <span class="text-cyan-400">Pro v5.0</span></h1>
                         <span id="badgeConexion" class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                             <i class="fa-solid fa-database mr-1"></i>MySQL + FastAPI
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400">ERP Comercial, Facturación POS FEL (SAT), Pedidos WhatsApp B2B & Kardex Forense</p>
+                    <p class="text-xs text-slate-400">POS con Escáner Láser, Facturación FEL (SAT), BI Analytics, Utilidad Neta & Kardex SQL</p>
                 </div>
             </div>
 
-            <!-- NAVEGACIÓN DE MÓDULOS -->
+            <!-- NAVEGACIÓN DE 4 MÓDULOS -->
             <nav class="flex flex-wrap gap-2">
                 <button onclick="cambiarTab('pos')" id="tabBtn-pos" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
-                    <i class="fa-solid fa-cash-register mr-1.5"></i>1. Terminal POS & FEL
+                    <i class="fa-solid fa-barcode mr-1.5"></i>1. POS Láser & FEL
                 </button>
                 <button onclick="cambiarTab('inventario')" id="tabBtn-inventario" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-warehouse mr-1.5"></i>2. Inventario, QR & WhatsApp B2B
+                    <i class="fa-solid fa-warehouse mr-1.5"></i>2. Inventario & WhatsApp B2B
                 </button>
                 <button onclick="cambiarTab('kardex')" id="tabBtn-kardex" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
                     <i class="fa-solid fa-shield-halved mr-1.5"></i>3. Kardex SQL & Corte Z
+                </button>
+                <button onclick="cambiarTab('analytics')" id="tabBtn-analytics" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-amber-400 hover:bg-slate-700 border border-amber-500/30">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i>4. BI Gerencial & Gráficas
                 </button>
             </nav>
         </div>
@@ -58,37 +61,47 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-1">
 
-        <!-- KPIs EJECUTIVOS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- KPIs EJECUTIVOS CON UTILIDAD NETA -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-xs text-slate-400 uppercase font-semibold">Valorización de Inventario</span>
-                <p id="kpiValorInventario" class="text-2xl font-extrabold text-white mt-1 mono">Q0.00</p>
-                <span class="text-[11px] text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i>Auditado por Trigger SQL</span>
+                <span class="text-[11px] text-slate-400 uppercase font-semibold">Valor Costo Inventario</span>
+                <p id="kpiValorInventario" class="text-xl font-extrabold text-white mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i>Auditado en MySQL</span>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-xs text-slate-400 uppercase font-semibold">Ventas Facturadas Hoy (FEL)</span>
-                <p id="kpiVentasHoy" class="text-2xl font-extrabold text-cyan-400 mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-slate-400 uppercase font-semibold">Ventas Brutas Hoy (FEL)</span>
+                <p id="kpiVentasHoy" class="text-xl font-extrabold text-cyan-400 mt-1 mono">Q0.00</p>
                 <span id="kpiNumFacturas" class="text-[11px] text-slate-400">0 DTEs certificados SAT</span>
             </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-xs text-slate-400 uppercase font-semibold">Alertas de Reabastecimiento</span>
-                <p id="kpiStockBajo" class="text-2xl font-extrabold text-amber-400 mt-1 mono">0 SKUs</p>
-                <span class="text-[11px] text-amber-300"><i class="fa-brands fa-whatsapp mr-1"></i>Listos para pedido B2B</span>
+            <div class="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 bg-gradient-to-br from-slate-900 to-emerald-950/20">
+                <span class="text-[11px] text-emerald-300 uppercase font-bold">💰 Ganancia Neta Limpia</span>
+                <p id="kpiUtilidadNeta" class="text-xl font-extrabold text-emerald-400 mt-1 mono">Q0.00</p>
+                <span id="kpiMargenPorcentaje" class="text-[11px] text-emerald-300">Margen comercial real</span>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-xs text-slate-400 uppercase font-semibold">Transacciones en Kardex</span>
-                <p id="kpiMovimientos" class="text-2xl font-extrabold text-indigo-400 mt-1 mono">0</p>
-                <span class="text-[11px] text-slate-400">Protección Anti-Stock Negativo</span>
+                <span class="text-[11px] text-slate-400 uppercase font-semibold">Alertas Stock Bajo</span>
+                <p id="kpiStockBajo" class="text-xl font-extrabold text-amber-400 mt-1 mono">0 SKUs</p>
+                <span class="text-[11px] text-amber-300"><i class="fa-brands fa-whatsapp mr-1"></i>Reabastecimiento B2B</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <span class="text-[11px] text-slate-400 uppercase font-semibold">Registros en Kardex</span>
+                <p id="kpiMovimientos" class="text-xl font-extrabold text-indigo-400 mt-1 mono">0</p>
+                <span class="text-[11px] text-slate-400">Trigger Anti-Stock Negativo</span>
             </div>
         </div>
 
-        <!-- ==================== MÓDULO 1: TERMINAL POS & FACTURACIÓN FEL ==================== -->
+        <!-- ==================== MÓDULO 1: POS CON ESCÁNER LÁSER & FEL ==================== -->
         <section id="vista-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Catálogo rápido de productos -->
             <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5">
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-barcode text-indigo-400 mr-2"></i>Catálogo Rápido de Punto de Venta</h2>
-                    <input type="text" id="buscadorPOS" oninput="renderizarCatalogoPOS()" placeholder="Buscar por nombre o código SKU..." class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white w-64 focus:outline-none focus:border-indigo-500">
+                    <div>
+                        <h2 class="text-base font-bold text-white"><i class="fa-solid fa-barcode text-indigo-400 mr-2"></i>Terminal POS con Modo Pistola Láser USB</h2>
+                        <p class="text-[11px] text-slate-400">Escribe un SKU (ej. <span class="mono text-cyan-400">HW-SSD-001</span>) y presiona <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-white">Enter</kbd> para disparo automático con sonido Beep</p>
+                    </div>
+                    <div class="relative w-full sm:w-72">
+                        <i class="fa-solid fa-crosshairs absolute left-3 top-2.5 text-cyan-400 text-xs"></i>
+                        <input type="text" id="buscadorPOS" oninput="renderizarCatalogoPOS()" onkeydown="procesarEscanerLaser(event)" placeholder="Escanear SKU + Enter o buscar..." class="w-full bg-slate-950 border border-cyan-500/40 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400 mono">
+                    </div>
                 </div>
                 <div id="gridCatalogoPOS" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[480px] overflow-y-auto pr-1"></div>
             </div>
@@ -98,10 +111,9 @@
                 <div>
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
                         <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-file-invoice-dollar text-cyan-400 mr-2"></i>Factura Electrónica FEL (SAT)</h3>
-                        <span class="text-[11px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded mono">IVA 12% Incluido</span>
+                        <span class="text-[11px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded mono">IVA 12%</span>
                     </div>
 
-                    <!-- Datos del Receptor SAT -->
                     <div class="grid grid-cols-3 gap-2 mb-3">
                         <div>
                             <label class="text-[11px] text-slate-400 block mb-1">NIT Cliente</label>
@@ -114,23 +126,22 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-[11px] text-slate-400 block mb-1">Método de Pago (Para Arqueo Corte Z)</label>
+                        <label class="text-[11px] text-slate-400 block mb-1">Método de Pago</label>
                         <select id="posMetodoPago" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                             <option value="EFECTIVO">💵 Efectivo (Quetzales)</option>
-                            <option value="TARJETA_POS">💳 Tarjeta Crédito / Débito (POS Visanet/NeoNet)</option>
+                            <option value="TARJETA_POS">💳 Tarjeta Crédito / Débito (POS)</option>
                             <option value="TRANSFERENCIA">🏦 Transferencia Bancaria / QR</option>
                         </select>
                     </div>
 
-                    <!-- Lista de ítems en el carrito -->
                     <div id="listaCarritoPOS" class="space-y-2 max-h-52 overflow-y-auto my-3 border-y border-slate-800 py-3"></div>
                 </div>
 
-                <!-- Totales y botón de cobro -->
                 <div class="pt-2">
                     <div class="space-y-1 text-xs mb-4">
                         <div class="flex justify-between text-slate-400"><span>Subtotal Base (Sin IVA):</span><span id="posSubtotal" class="mono">Q0.00</span></div>
                         <div class="flex justify-between text-slate-400"><span>Impuesto IVA (12% SAT):</span><span id="posIva" class="mono">Q0.00</span></div>
+                        <div class="flex justify-between text-emerald-400/90 text-[11px]"><span>Utilidad Neta de esta venta:</span><span id="posGananciaVenta" class="mono font-bold">+Q0.00</span></div>
                         <div class="flex justify-between text-base font-extrabold text-white pt-1 border-t border-slate-800"><span>TOTAL A COBRAR:</span><span id="posTotal" class="mono text-emerald-400">Q0.00</span></div>
                     </div>
 
@@ -144,9 +155,8 @@
         <!-- ==================== MÓDULO 2: INVENTARIO, QR Y WHATSAPP B2B ==================== -->
         <section id="vista-inventario" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Formulario de Entrada/Salida Manual -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <h3 class="text-sm font-bold text-white mb-3"><i class="fa-solid fa-right-left text-indigo-400 mr-2"></i>Registrar Movimiento de Almacén</h3>
+                    <h3 class="text-sm font-bold text-white mb-3"><i class="fa-solid fa-right-left text-indigo-400 mr-2"></i>Registrar Movimiento en Kardex</h3>
                     <form onsubmit="registrarMovimientoManual(event)" class="space-y-3 text-xs">
                         <div>
                             <label class="text-slate-400 block mb-1">Seleccionar Producto (SKU)</label>
@@ -166,19 +176,18 @@
                             </div>
                         </div>
                         <div>
-                            <label class="text-slate-400 block mb-1">Documento / Referencia de Auditoría</label>
-                            <input type="text" id="movReferencia" placeholder="Ej. FAC-COMPRA-8821 o Requisición #14" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" required>
+                            <label class="text-slate-400 block mb-1">Documento / Referencia</label>
+                            <input type="text" id="movReferencia" placeholder="Ej. FAC-COMPRA-8821" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" required>
                         </div>
                         <button type="submit" class="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">
-                            Ejecutar Transacción en MySQL
+                            Ejecutar Trigger Transaccional en MySQL
                         </button>
                     </form>
                 </div>
 
-                <!-- Tabla general de inventario con QR y WhatsApp B2B -->
                 <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                        <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-boxes-packing text-cyan-400 mr-2"></i>Catálogo Maestro, Etiquetas QR & Reabastecimiento WhatsApp B2B</h3>
+                        <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-boxes-packing text-cyan-400 mr-2"></i>Catálogo Maestro, Margen Unitario, QR & WhatsApp B2B</h3>
                         <button onclick="exportarInventarioCSV()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700">
                             <i class="fa-solid fa-file-excel mr-1"></i>Exportar Excel (CSV)
                         </button>
@@ -189,10 +198,9 @@
                                 <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
                                     <th class="py-2.5 px-2">SKU</th>
                                     <th class="py-2.5 px-2">Producto</th>
-                                    <th class="py-2.5 px-2">Costo / Precio</th>
-                                    <th class="py-2.5 px-2">Stock Actual</th>
-                                    <th class="py-2.5 px-2">Proveedor B2B</th>
-                                    <th class="py-2.5 px-2 text-right">Acciones</th>
+                                    <th class="py-2.5 px-2">Costo / Venta (Ganancia)</th>
+                                    <th class="py-2.5 px-2">Stock</th>
+                                    <th class="py-2.5 px-2 text-right">Acciones B2B</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaInventarioBody" class="divide-y divide-slate-800/70"></tbody>
@@ -202,37 +210,35 @@
             </div>
         </section>
 
-        <!-- ==================== MÓDULO 3: KARDEX FORENSE SQL & CORTE DE CAJA Z ==================== -->
+        <!-- ==================== MÓDULO 3: KARDEX SQL & CORTE DE CAJA Z ==================== -->
         <section id="vista-kardex" class="hidden space-y-6">
-            <!-- Arqueo de Caja (Reporte Z) -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-vault text-emerald-400 mr-2"></i>Corte de Caja Diario (Reporte Z - Arqueo de Turno)</h3>
-                        <p class="text-xs text-slate-400">Desglose automático por método de pago e impuestos SAT</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+                <h3 class="text-sm font-bold text-white mb-1"><i class="fa-solid fa-vault text-emerald-400 mr-2"></i>Corte de Caja Diario (Reporte Z) + Estado de Resultados Diario</h3>
+                <p class="text-xs text-slate-400 mb-4">Conciliación financiera de medios de pago, débito fiscal IVA y utilidad neta limpia</p>
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 text-xs">
                     <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                        <span class="text-slate-400">💵 Total en Efectivo:</span>
+                        <span class="text-slate-400">💵 Efectivo en Caja:</span>
                         <p id="corteEfectivo" class="text-lg font-bold text-emerald-400 mono mt-1">Q0.00</p>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                        <span class="text-slate-400">💳 Total Tarjeta POS:</span>
+                        <span class="text-slate-400">💳 Voucher Tarjeta POS:</span>
                         <p id="corteTarjeta" class="text-lg font-bold text-cyan-400 mono mt-1">Q0.00</p>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                        <span class="text-slate-400">🏦 Total Transferencias:</span>
+                        <span class="text-slate-400">🏦 Transferencias:</span>
                         <p id="corteTransferencia" class="text-lg font-bold text-indigo-400 mono mt-1">Q0.00</p>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                        <span class="text-slate-400">🏛️ Débito Fiscal IVA (12%):</span>
+                        <span class="text-slate-400">🏛️ Débito Fiscal IVA 12%:</span>
                         <p id="corteIva" class="text-lg font-bold text-amber-400 mono mt-1">Q0.00</p>
+                    </div>
+                    <div class="bg-emerald-950/30 border border-emerald-500/40 p-3.5 rounded-xl">
+                        <span class="text-emerald-300 font-semibold">📈 Ganancia Neta Real:</span>
+                        <p id="corteUtilidadNeta" class="text-lg font-extrabold text-emerald-400 mono mt-1">Q0.00</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Bitácora Inmutable del Trigger SQL -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                 <h3 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-terminal text-indigo-400 mr-2"></i>Bitácora Forense del Trigger (`trg_procesar_movimiento_kardex`)</h3>
                 <div class="overflow-x-auto">
@@ -245,7 +251,7 @@
                                 <th class="py-2.5 px-2">Operación</th>
                                 <th class="py-2.5 px-2">Cant.</th>
                                 <th class="py-2.5 px-2">Saldo Ant. ➔ Nuevo</th>
-                                <th class="py-2.5 px-2">Valor Mov.</th>
+                                <th class="py-2.5 px-2">Valor Costo</th>
                                 <th class="py-2.5 px-2">Referencia / DTE</th>
                             </tr>
                         </thead>
@@ -254,22 +260,42 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== MÓDULO 4: BI GERENCIAL & GRÁFICAS (CHART.JS) ==================== -->
+        <section id="vista-analytics" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <h3 class="text-sm font-bold text-white mb-1"><i class="fa-solid fa-chart-column text-cyan-400 mr-2"></i>Rentabilidad y Margen de Ganancia por Producto (Q)</h3>
+                    <p class="text-xs text-slate-400 mb-4">Comparativa visual entre Costo Unitario vs. Precio de Venta y Ganancia Neta</p>
+                    <div class="h-72">
+                        <canvas id="graficaRentabilidad"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <h3 class="text-sm font-bold text-white mb-1"><i class="fa-solid fa-chart-pie text-indigo-400 mr-2"></i>Valorización del Inventario por Categoría (Q)</h3>
+                    <p class="text-xs text-slate-400 mb-4">Distribución del capital invertido en bodega en tiempo real</p>
+                    <div class="h-72 flex items-center justify-center">
+                        <canvas id="graficaCategorias"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- MODAL DE TICKET TÉRMICO 80MM (IMPRIMIBLE) -->
+    <!-- MODAL DE TICKET TÉRMICO 80MM -->
     <div id="contenedorModalTicket" class="fixed inset-0 bg-black/75 z-50 hidden items-center justify-center p-4">
         <div id="modalTicket" class="bg-white text-black rounded-xl p-5 w-full max-w-xs shadow-2xl mono text-xs">
             <div class="text-center border-b border-dashed border-gray-400 pb-3 mb-3">
                 <h4 class="font-extrabold text-sm">QUANTUM ERP COMERCIAL S.A.</h4>
                 <p class="text-[11px]">Ciudad de Guatemala, Guatemala</p>
                 <p class="text-[11px]">NIT Emisor: 10492837-K</p>
-                <p class="text-[10px] font-bold mt-1">DOCUMENTO TRIBUTARIO ELECTRÓNICO (FEL)</p>
+                <p class="text-[10px] font-bold mt-1">FACTURA ELECTRÓNICA FEL (SAT)</p>
                 <p id="ticketDTE" class="text-[10px] break-all"></p>
                 <p id="ticketFecha" class="text-[10px]"></p>
             </div>
             <div class="border-b border-dashed border-gray-400 pb-2 mb-2 text-[11px]">
                 <p><strong>Cliente:</strong> <span id="ticketCliente"></span></p>
-                <p><strong>NIT Receptor:</strong> <span id="ticketNit"></span></p>
+                <p><strong>NIT:</strong> <span id="ticketNit"></span></p>
                 <p><strong>Pago:</strong> <span id="ticketMetodo"></span></p>
             </div>
             <div id="ticketItems" class="space-y-1 border-b border-dashed border-gray-400 pb-2 mb-2 text-[11px]"></div>
@@ -278,10 +304,6 @@
                 <p>IVA (12%): <span id="ticketIva"></span></p>
                 <p class="text-sm">TOTAL: <span id="ticketTotal"></span></p>
             </div>
-            <div class="text-center mt-4 pt-2 border-t border-dashed border-gray-400 text-[10px]">
-                <p>¡Gracias por su compra!</p>
-                <p>Sujeto a pagos trimestrales ISR</p>
-            </div>
             <div class="mt-4 flex gap-2 no-print">
                 <button onclick="window.print()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-bold text-xs">Imprimir 80mm</button>
                 <button onclick="cerrarModalTicket()" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-bold text-xs">Cerrar</button>
@@ -289,7 +311,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ETIQUETA QR DE ACTIVO -->
+    <!-- MODAL DE ETIQUETA QR -->
     <div id="contenedorModalQR" class="fixed inset-0 bg-black/75 z-50 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 w-full max-w-xs text-center">
             <h4 id="qrTitulo" class="font-bold text-white text-sm mb-1"></h4>
@@ -302,8 +324,25 @@
     <script>
         const API_URL = "http://127.0.0.1:8000/api";
         let modoLocalFallback = false;
+        let chartRentabilidadInstance = null;
+        let chartCategoriasInstance = null;
 
-        // Estado reactivo (con datos iniciales por si el backend está apagado)
+        // Generador de sonido Beep Láser (Web Audio API sin archivos externos)
+        function sonarBeepPOS(frecuencia = 1050, duracion = 0.08) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(frecuencia, ctx.currentTime);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duracion);
+            } catch (e) {}
+        }
+
         let estado = {
             productos: [
                 { id: 1, sku: 'HW-SSD-001', nombre: 'SSD NVMe Kingston 1TB PCIe 4.0', categoria: 'Almacenamiento', costo_unitario: 420.00, precio_venta: 595.00, stock_actual: 15, stock_minimo: 5, proveedor_nombre: 'Intcomex Guatemala', proveedor_tel: '50223286000' },
@@ -317,13 +356,14 @@
                 { id: 2, fecha_registro: '2026-10-24 08:35:00', sku: 'HW-RAM-002', producto_nombre: 'Memoria RAM Corsair 16GB', tipo_operacion: 'ENTRADA', cantidad: 4, saldo_anterior: 0, saldo_nuevo: 4, valor_total_movimiento: 1120.00, referencia_documento: 'FAC-COMPRA-00102 | Stock Bajo' }
             ],
             facturas: [],
+            utilidadAcumuladaHoy: 0,
             carrito: []
         };
 
         async function cargarDatosServidor() {
             try {
                 const res = await fetch(`${API_URL}/dashboard`);
-                if (!res.ok) throw new Error(" Servidor FastAPI no disponible");
+                if (!res.ok) throw new Error("Fallback demo");
                 const data = await res.json();
                 estado.productos = data.productos;
                 estado.kardex = data.kardex;
@@ -344,6 +384,25 @@
             renderizarCarritoPOS();
             renderizarTablaInventario();
             renderizarKardexYCorteZ();
+            renderizarGraficasBI();
+        }
+
+        // Modo Pistola Lectora de Código de Barras (SKU + Enter)
+        function procesarEscanerLaser(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const codigo = e.target.value.trim().toUpperCase();
+                if (!codigo) return;
+                const prod = estado.productos.find(p => p.sku.toUpperCase() === codigo || p.nombre.toUpperCase().includes(codigo));
+                if (prod) {
+                    agregarAlCarrito(prod.id);
+                    e.target.value = "";
+                    renderizarCatalogoPOS();
+                } else {
+                    sonarBeepPOS(240, 0.25);
+                    alert(`⚠️ Código de barras / SKU "${codigo}" no encontrado en el catálogo.`);
+                }
+            }
         }
 
         function actualizarKPIs() {
@@ -354,6 +413,7 @@
             document.getElementById('kpiValorInventario').textContent = `Q${valorTotal.toFixed(2)}`;
             document.getElementById('kpiVentasHoy').textContent = `Q${ventasHoy.toFixed(2)}`;
             document.getElementById('kpiNumFacturas').textContent = `${estado.facturas.length} DTEs certificados SAT`;
+            document.getElementById('kpiUtilidadNeta').textContent = `Q${estado.utilidadAcumuladaHoy.toFixed(2)}`;
             document.getElementById('kpiStockBajo').textContent = `${bajos} SKUs`;
             document.getElementById('kpiMovimientos').textContent = estado.kardex.length;
         }
@@ -363,7 +423,9 @@
             const contenedor = document.getElementById('gridCatalogoPOS');
             const filtrados = estado.productos.filter(p => p.nombre.toLowerCase().includes(filtro) || p.sku.toLowerCase().includes(filtro));
 
-            contenedor.innerHTML = filtrados.map(p => `
+            contenedor.innerHTML = filtrados.map(p => {
+                const gananciaUnit = Number(p.precio_venta) - Number(p.costo_unitario);
+                return `
                 <div class="bg-slate-950 border ${p.stock_actual <= p.stock_minimo ? 'border-amber-500/40' : 'border-slate-800'} rounded-xl p-3.5 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
@@ -372,27 +434,30 @@
                                 Stock: ${p.stock_actual}
                             </span>
                         </div>
-                        <h4 class="text-xs font-bold text-white mb-2">${p.nombre}</h4>
+                        <h4 class="text-xs font-bold text-white mb-1">${p.nombre}</h4>
+                        <p class="text-[10px] text-emerald-400/80 mono mb-2">Margen Neto: +Q${gananciaUnit.toFixed(2)} c/u</p>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t border-slate-800/80">
                         <span class="text-sm font-extrabold text-cyan-400 mono">Q${Number(p.precio_venta).toFixed(2)}</span>
                         <button onclick="agregarAlCarrito(${p.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">
-                            <i class="fa-solid fa-plus mr-1"></i>Agregar
+                            <i class="fa-solid fa-barcode mr-1"></i>Agregar
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function agregarAlCarrito(productoId) {
             const prod = estado.productos.find(p => p.id === productoId);
             if (!prod || prod.stock_actual <= 0) {
+                sonarBeepPOS(220, 0.25);
                 alert("⚠️ TRIGGER SQL PREVENTIVO: Este producto no cuenta con stock disponible.");
                 return;
             }
             const itemExistente = estado.carrito.find(i => i.producto_id === productoId);
             if (itemExistente) {
                 if (itemExistente.cantidad + 1 > prod.stock_actual) {
+                    sonarBeepPOS(220, 0.25);
                     alert(`⚠️ Stock insuficiente. Solo hay ${prod.stock_actual} unidades de ${prod.sku}.`);
                     return;
                 }
@@ -402,10 +467,12 @@
                     producto_id: prod.id,
                     sku: prod.sku,
                     nombre: prod.nombre,
+                    costo_unitario: Number(prod.costo_unitario),
                     precio_venta: Number(prod.precio_venta),
                     cantidad: 1
                 });
             }
+            sonarBeepPOS(1150, 0.07);
             renderizarCarritoPOS();
         }
 
@@ -417,7 +484,7 @@
         function renderizarCarritoPOS() {
             const lista = document.getElementById('listaCarritoPOS');
             if (estado.carrito.length === 0) {
-                lista.innerHTML = `<p class="text-center text-xs text-slate-500 py-6">Selecciona productos del catálogo para facturar</p>`;
+                lista.innerHTML = `<p class="text-center text-xs text-slate-500 py-6">Escanea o selecciona productos para facturar</p>`;
             } else {
                 lista.innerHTML = estado.carrito.map(item => `
                     <div class="flex justify-between items-center bg-slate-950 p-2 rounded-lg border border-slate-800 text-xs">
@@ -434,11 +501,14 @@
             }
 
             const total = estado.carrito.reduce((acc, i) => acc + (i.cantidad * i.precio_venta), 0);
+            const costoTotal = estado.carrito.reduce((acc, i) => acc + (i.cantidad * i.costo_unitario), 0);
             const subtotal = total / 1.12;
             const iva = total - subtotal;
+            const ganancia = total - costoTotal;
 
             document.getElementById('posSubtotal').textContent = `Q${subtotal.toFixed(2)}`;
             document.getElementById('posIva').textContent = `Q${iva.toFixed(2)}`;
+            document.getElementById('posGananciaVenta').textContent = `+Q${ganancia.toFixed(2)}`;
             document.getElementById('posTotal').textContent = `Q${total.toFixed(2)}`;
         }
 
@@ -464,6 +534,8 @@
 
             let dteGenerado = `DTE-FEL-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.random().toString(36).substring(2,8).toUpperCase()}`;
             const total = itemsCopia.reduce((acc, i) => acc + (i.cantidad * i.precio_venta), 0);
+            const costoTotal = itemsCopia.reduce((acc, i) => acc + (i.cantidad * i.costo_unitario), 0);
+            const gananciaEstaVenta = total - costoTotal;
             const subtotal = +(total / 1.12).toFixed(2);
             const iva = +(total - subtotal).toFixed(2);
 
@@ -477,13 +549,13 @@
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.detail || "Error al facturar");
                     dteGenerado = data.numero_dte;
+                    estado.utilidadAcumuladaHoy += gananciaEstaVenta;
                     await cargarDatosServidor();
                 } catch (e) {
                     alert("Error SQL: " + e.message);
                     return;
                 }
             } else {
-                // Simulación exacta del Trigger en modo demo
                 itemsCopia.forEach(item => {
                     const prod = estado.productos.find(p => p.id === item.producto_id);
                     const ant = prod.stock_actual;
@@ -510,9 +582,10 @@
                     iva_12: iva,
                     total_facturado: total
                 });
+                estado.utilidadAcumuladaHoy += gananciaEstaVenta;
             }
 
-            // Mostrar Ticket Térmico 80mm
+            sonarBeepPOS(880, 0.15);
             document.getElementById('ticketDTE').textContent = `Autorización: ${dteGenerado}`;
             document.getElementById('ticketFecha').textContent = `Fecha: ${new Date().toLocaleString()}`;
             document.getElementById('ticketCliente').textContent = cliente;
@@ -547,25 +620,21 @@
             const tbody = document.getElementById('tablaInventarioBody');
             tbody.innerHTML = estado.productos.map(p => {
                 const esBajo = p.stock_actual <= p.stock_minimo;
-                const msgWhatsApp = encodeURIComponent(`Hola ${p.proveedor_nombre}, le escribimos de QuantumERP Guatemala para solicitar cotización y pedido urgente de reabastecimiento para el SKU: ${p.sku} (${p.nombre}). Stock actual crítico: ${p.stock_actual} unidades.`);
+                const margen = Number(p.precio_venta) - Number(p.costo_unitario);
+                const msgWhatsApp = encodeURIComponent(`Hola ${p.proveedor_nombre}, solicitamos cotización y pedido B2B para SKU: ${p.sku} (${p.nombre}). Stock actual: ${p.stock_actual} unidades.`);
                 return `
                     <tr class="hover:bg-slate-800/40">
                         <td class="py-3 px-2 mono font-bold text-indigo-400">${p.sku}</td>
                         <td class="py-3 px-2 font-semibold text-white">${p.nombre}</td>
-                        <td class="py-3 px-2 mono text-slate-300">Q${Number(p.costo_unitario).toFixed(2)} / <span class="text-cyan-400 font-bold">Q${Number(p.precio_venta).toFixed(2)}</span></td>
+                        <td class="py-3 px-2 mono text-slate-300">Q${Number(p.costo_unitario).toFixed(2)} / <span class="text-cyan-400 font-bold">Q${Number(p.precio_venta).toFixed(2)}</span> <span class="text-emerald-400 text-[10px]">(+Q${margen.toFixed(0)})</span></td>
                         <td class="py-3 px-2">
                             <span class="px-2 py-1 rounded-full text-[11px] font-bold ${esBajo ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/15 text-emerald-400'}">
                                 ${p.stock_actual} uds ${esBajo ? '⚠️ BAJO' : ''}
                             </span>
                         </td>
-                        <td class="py-3 px-2 text-slate-400">${p.proveedor_nombre}</td>
                         <td class="py-3 px-2 text-right space-x-1">
-                            <button onclick="mostrarQR('${p.sku}', '${p.nombre}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400" title="Generar Etiqueta QR">
-                                <i class="fa-solid fa-qrcode"></i> QR
-                            </button>
-                            <a href="https://wa.me/${p.proveedor_tel}?text=${msgWhatsApp}" target="_blank" class="inline-block px-2.5 py-1 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-semibold">
-                                <i class="fa-brands fa-whatsapp"></i> Pedir B2B
-                            </a>
+                            <button onclick="mostrarQR('${p.sku}', '${p.nombre}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400"><i class="fa-solid fa-qrcode"></i> QR</button>
+                            <a href="https://wa.me/${p.proveedor_tel}?text=${msgWhatsApp}" target="_blank" class="inline-block px-2.5 py-1 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-semibold"><i class="fa-brands fa-whatsapp"></i> Pedir B2B</a>
                         </td>
                     </tr>
                 `;
@@ -638,6 +707,7 @@
             document.getElementById('corteTarjeta').textContent = `Q${tarj.toFixed(2)}`;
             document.getElementById('corteTransferencia').textContent = `Q${tran.toFixed(2)}`;
             document.getElementById('corteIva').textContent = `Q${ivaTotal.toFixed(2)}`;
+            document.getElementById('corteUtilidadNeta').textContent = `Q${estado.utilidadAcumuladaHoy.toFixed(2)}`;
 
             const tbody = document.getElementById('tablaKardexBody');
             tbody.innerHTML = estado.kardex.map(k => `
@@ -646,9 +716,7 @@
                     <td class="py-2.5 px-2 text-slate-400">${k.fecha_registro}</td>
                     <td class="py-2.5 px-2 text-white font-semibold">${k.sku} - ${k.producto_nombre || ''}</td>
                     <td class="py-2.5 px-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${k.tipo_operacion === 'ENTRADA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
-                            ${k.tipo_operacion}
-                        </span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${k.tipo_operacion === 'ENTRADA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${k.tipo_operacion}</span>
                     </td>
                     <td class="py-2.5 px-2 font-bold">${k.cantidad}</td>
                     <td class="py-2.5 px-2 text-cyan-400">${k.saldo_anterior} ➔ ${k.saldo_nuevo}</td>
@@ -658,26 +726,59 @@
             `).join('');
         }
 
+        function renderizarGraficasBI() {
+            const ctxBar = document.getElementById('graficaRentabilidad').getContext('2d');
+            const ctxPie = document.getElementById('graficaCategorias').getContext('2d');
+
+            if (chartRentabilidadInstance) chartRentabilidadInstance.destroy();
+            if (chartCategoriasInstance) chartCategoriasInstance.destroy();
+
+            chartRentabilidadInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: estado.productos.map(p => p.sku),
+                    datasets: [
+                        { label: 'Costo Unitario (Q)', data: estado.productos.map(p => p.costo_unitario), backgroundColor: '#6366f1' },
+                        { label: 'Precio Venta (Q)', data: estado.productos.map(p => p.precio_venta), backgroundColor: '#06b6d4' },
+                        { label: 'Ganancia Neta Unit. (Q)', data: estado.productos.map(p => p.precio_venta - p.costo_unitario), backgroundColor: '#10b981' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#cbd5e1' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+            });
+
+            chartCategoriasInstance = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: estado.productos.map(p => p.categoria),
+                    datasets: [{
+                        data: estado.productos.map(p => p.costo_unitario * p.stock_actual),
+                        backgroundColor: ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#cbd5e1' } } } }
+            });
+        }
+
         function exportarInventarioCSV() {
-            let csv = "SKU,Producto,Categoria,Costo_Q,Precio_Venta_Q,Stock_Actual,Proveedor\n";
+            let csv = "SKU,Producto,Categoria,Costo_Q,Precio_Venta_Q,Ganancia_Unit_Q,Stock_Actual,Proveedor\n";
             estado.productos.forEach(p => {
-                csv += `"${p.sku}","${p.nombre}","${p.categoria}",${p.costo_unitario},${p.precio_venta},${p.stock_actual},"${p.proveedor_nombre}"\n`;
+                csv += `"${p.sku}","${p.nombre}","${p.categoria}",${p.costo_unitario},${p.precio_venta},${p.precio_venta - p.costo_unitario},${p.stock_actual},"${p.proveedor_nombre}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = "QuantumERP_Inventario_Auditado.csv";
+            a.href = URL.createObjectURL(blob);
+            a.download = "QuantumERP_v5_Inventario_Auditado.csv";
             a.click();
         }
 
         function cambiarTab(tab) {
-            ['pos', 'inventario', 'kardex'].forEach(t => {
+            ['pos', 'inventario', 'kardex', 'analytics'].forEach(t => {
                 document.getElementById(`vista-${t}`).classList.add('hidden');
                 document.getElementById(`tabBtn-${t}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700";
             });
             document.getElementById(`vista-${tab}`).classList.remove('hidden');
             document.getElementById(`tabBtn-${tab}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-lg shadow-indigo-600/30";
+            if (tab === 'analytics') renderizarGraficasBI();
         }
 
         window.onload = cargarDatosServidor;
